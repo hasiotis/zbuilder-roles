@@ -2,10 +2,6 @@
 - name: Debian | Enable sudo without password (Debian)
   lineinfile: "dest=/etc/sudoers backrefs=yes regexp='^%sudo\\s+ALL=\\(ALL:ALL\\)\\s+ALL' line='%sudo\\tALL=(ALL) NOPASSWD: ALL'"
 
-- name: Debian | Update apt package cache
-  apt: update_cache=yes
-  when: not ansible_check_mode
-
 - name: Debian | Install packages
   apt:
     pkg:
@@ -49,8 +45,8 @@
 - name: Debian | Setup global vimrc
   template: src=vimrc-local.j2 dest=/etc/vim/vimrc.local owner=root group=root mode=0644
 
-- name: Debian | Set timezone to ETC/UTC
-  timezone: name=ETC/UTC
+- name: Debian | Set timezone to Etc/UTC
+  timezone: name="Etc/UTC"
 
 - name: Debian | Disallow root SSH access
   action: lineinfile dest=/etc/ssh/sshd_config regexp="^PermitRootLogin" line="PermitRootLogin without-password" state=present
