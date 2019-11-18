@@ -1,0 +1,12 @@
+---
+- name: Restart ssh
+  service: name=ssh state=restarted
+
+- name: Restart sshd
+  service: name=sshd state=restarted
+
+- name: Update timezone
+  command: dpkg-reconfigure --frontend noninteractive tzdata
+
+- name: Reconfigure locales
+  shell: 'dpkg-reconfigure --frontend=noninteractive locales && update-locale LANG=en_US.UTF-8'

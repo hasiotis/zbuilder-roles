@@ -1,0 +1,21 @@
+
+ oooooooooooo oooooooooo.               o8o  oooo        .o8
+d'""""""d888' `888'   `Y8b              `"'  `888       "888
+      .888P    888     888 oooo  oooo  oooo   888   .oooo888   .ooooo.  oooo d8b
+     d888'     888oooo888' `888  `888  `888   888  d88' `888  d88' `88b `888""8P
+   .888P       888    `88b  888   888   888   888  888   888  888ooo888  888
+  d888'    .P  888    .88P  888   888   888   888  888   888  888    .o  888
+.8888888888P  o888bood8P'   `V88V"V8P' o888o o888o `Y8bod88P" `Y8bod8P' d888b
+
+
+            OS : {{ ansible_distribution }}, {{ ansible_distribution_version }}, {{ ansible_kernel }}, {{ ansible_virtualization_type }}
+          Host : {{ ansible_hostname }}
+          IPv4 : {{ ansible_default_ipv4.address }}
+
+  Server Roles :
+{% for group in group_names %}
+{% if not group in ['environment'] %}
+    -  {{ group }} ({{ groups[group] | map('replace', '.atypon.local', '') | join(', ') }})
+{% endif %}
+{% endfor %}
+

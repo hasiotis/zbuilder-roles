@@ -1,0 +1,64 @@
+---
+- name: Debian | Enable sudo without password (Debian)
+  lineinfile: "dest=/etc/sudoers backrefs=yes regexp='^%sudo\\s+ALL=\\(ALL:ALL\\)\\s+ALL' line='%sudo\\tALL=(ALL) NOPASSWD: ALL'"
+
+- name: Debian | Update apt package cache
+  apt: update_cache=yes
+  when: not ansible_check_mode
+
+- name: Debian | Install packages
+  apt:
+    pkg:
+    - rsync
+    - less
+    - mc
+    - acl
+    - curl
+    - links
+    - lynx
+    - vim
+    - lsof
+    - ssh
+    - host
+    - htop
+    - ntp
+    - mutt
+    - git-core
+    - iotop
+    - make
+    - zip
+    - unzip
+    - tshark
+    - sysstat
+    - python-httplib2
+    - python-netaddr
+    - dstat
+
+- name: Debian | Configure locales
+  locale_gen: name={{ item }} state=present
+  with_items:
+    - en_US.UTF-8
+
+- name: Debian | Set default locale to en_US.UTF-8
+  debconf: name=locales question='locales/default_environment_locale' value=en_US.UTF-8 vtype='select'
+  notify: Reconfigure locales
+
+- name: Debian | Update the motd file
+  template: src=motd.j2 dest=/etc/motd owner=root group=root mode=0644
+
+- name: Debian | Setup global vimrc
+  template: src=vimrc-local.j2 dest=/etc/vim/vimrc.local owner=root group=root mode=0644
+
+- name: Debian | Set timezone to ETC/UTC
+  timezone: name=ETC/UTC
+
+- name: Debian | Disallow root SSH access
+  action: lineinfile dest=/etc/ssh/sshd_config regexp="^PermitRootLogin" line="PermitRootLogin without-password" state=present
+  notify: Restart ssh
+
+- name: Disable ipv6
+  sysctl: name={{ item.name }} value={{ item.value }} state=present ignoreerrors=yes
+  with_items:
+    - { name: 'net.ipv6.conf.all.disable_ipv6', value: 1 }
+    - { name: 'net.ipv6.conf.default.disable_ipv6', value: 1 }
+    - { name: 'net.ipv6.conf.lo.disable_ipv6', value: 1 }
