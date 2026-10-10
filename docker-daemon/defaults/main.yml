@@ -1,0 +1,5 @@
+---
+docker_daemon_registry_mirrors: []
+docker_daemon_log_driver: "json-file"
+docker_daemon_log_options: {}
+docker_daemon_users: [ "sysadmin" ]

@@ -8,9 +8,9 @@ d'""""""d888' `888'   `Y8b              `"'  `888       "888
 .8888888888P  o888bood8P'   `V88V"V8P' o888o o888o `Y8bod88P" `Y8bod8P' d888b
 
 
-            OS : {{ ansible_distribution }}, {{ ansible_distribution_version }}, {{ ansible_kernel }}, {{ ansible_virtualization_type }}
-          Host : {{ ansible_hostname }}
-          IPv4 : {{ ansible_default_ipv4.address }}
+            OS : {{ ansible_facts['distribution'] }}, {{ ansible_facts['distribution_version'] }}, {{ ansible_facts['kernel'] }}, {{ ansible_facts['virtualization_type'] }}
+          Host : {{ ansible_facts['hostname'] }}
+          IPv4 : {{ ansible_facts['default_ipv4']['address'] }}
 
   Server Roles :
 {% for group in group_names %}

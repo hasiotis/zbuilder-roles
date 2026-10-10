@@ -1,0 +1,11 @@
+---
+# Users to install Claude Code for (installs per-user into ~/.local/bin)
+# Defaults to the login user (SUDO_USER under become), not root
+claude_code_users:
+  - "{{ ansible_facts.env.SUDO_USER | default(ansible_facts.user_id) }}"
+
+# "stable", "latest", or a specific version, e.g. "2.1.0"
+claude_code_version: stable
+
+# Users that already have ~/.local/bin/claude are skipped; set true to re-install
+claude_code_force: false

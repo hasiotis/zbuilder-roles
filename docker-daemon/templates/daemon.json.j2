@@ -1,0 +1,7 @@
+{
+    "registry-mirrors": {{ docker_daemon_registry_mirrors | to_json }},
+    "log-driver": "{{ docker_daemon_log_driver }}"
+{%- if docker_daemon_log_options -%},
+    "log-opts": {{ docker_daemon_log_options | to_json }}
+{%- endif +%}
+}

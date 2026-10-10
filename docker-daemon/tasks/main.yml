@@ -1,0 +1,64 @@
+---
+- name: Install packages
+  apt:
+    pkg:
+    - curl
+    - ca-certificates
+    - python3-debian
+    - python3-docker
+    - amazon-ecr-credential-helper
+
+- name: Remove conflicting distro docker packages
+  apt:
+    pkg:
+    - docker.io
+    - docker-buildx
+    - docker-cli
+    - docker-compose
+    - docker-doc
+    - podman-docker
+    - containerd
+    - runc
+    state: absent
+
+- name: Remove legacy docker apt repo
+  file:
+    path: "/etc/apt/sources.list.d/download_docker_com_linux_{{ ansible_facts['distribution']|lower }}.list"
+    state: absent
+
+- name: Add docker apt repo
+  deb822_repository:
+    name: docker
+    types: deb
+    uris: "https://download.docker.com/linux/{{ ansible_facts['distribution']|lower }}"
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components: stable
+    architectures: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64'}[ansible_facts['architecture']] | default(ansible_facts['architecture']) }}"
+    signed_by: "https://download.docker.com/linux/{{ ansible_facts['distribution']|lower }}/gpg"
+  register: docker_repo
+
+- name: Update apt cache
+  apt: update_cache=True
+  when: docker_repo is changed
+
+- name: Install docker packages
+  apt:
+    pkg:
+    - docker-ce
+    - docker-compose-plugin
+
+- name: Setup docker configuration
+  template: src=daemon.json.j2 dest=/etc/docker/daemon.json owner=root group=root mode="0644"
+  notify: Restart docker
+
+- name: Setup cleanup cronjob
+  copy:
+    dest: /etc/cron.daily/docker-prune
+    mode: u+rwx,g=rwx
+    content: |
+      #!/bin/bash
+      docker system prune -af --filter "until=$((30*24))h"
+
+- name: Add sysadmin to docker group
+  user: name="{{ item }}" groups=docker append=yes
+  with_items: "{{ docker_daemon_users }}"

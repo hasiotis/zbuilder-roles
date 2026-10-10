@@ -1,0 +1,17 @@
+---
+- name: Check installed tools
+  stat:
+    path: "{{ utils_bin_dir }}/{{ item }}"
+  loop: "{{ utils_tools }}"
+  register: _utils_installed
+
+- name: Install tools
+  include_tasks: install.yml
+  vars:
+    # Not a fact: urls must be templated lazily, after _utils_version is set
+    _utils_spec: "{{ _utils_catalog[_utils_tool] }}"
+  loop: >-
+    {{ utils_tools if utils_force | bool
+       else _utils_installed.results | rejectattr('stat.exists') | map(attribute='item') | list }}
+  loop_control:
+    loop_var: _utils_tool

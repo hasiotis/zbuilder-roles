@@ -1,0 +1,9 @@
+---
+# Per tool: GitHub repo and the binaries shipped inside the release archive
+_python_catalog:
+  uv:
+    repo: astral-sh/uv
+    bins: [uv, uvx]
+  ruff:
+    repo: astral-sh/ruff
+    bins: [ruff]

@@ -1,0 +1,14 @@
+---
+- name: Check installed tools
+  stat:
+    path: "{{ python_bin_dir }}/{{ item }}"
+  loop: "{{ python_tools }}"
+  register: _python_installed
+
+- name: Install tools
+  include_tasks: install.yml
+  loop: >-
+    {{ python_tools if python_force | bool
+       else _python_installed.results | rejectattr('stat.exists') | map(attribute='item') | list }}
+  loop_control:
+    loop_var: _python_tool

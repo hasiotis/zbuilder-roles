@@ -1,0 +1,12 @@
+- name: Download awscliv2 installer
+  unarchive:
+    src: "https://awscli.amazonaws.com/awscli-exe-linux-{{ ansible_facts['architecture'] }}.zip"
+    dest: "/tmp"
+    remote_src: true
+    creates: "/tmp/aws"
+    mode: "0755"
+
+- name: Run the installer
+  command: "/tmp/aws/install"
+  args:
+    creates: /usr/local/bin/aws

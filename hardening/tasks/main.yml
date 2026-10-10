@@ -1,0 +1,14 @@
+---
+- name: Disallow root SSH access
+  action: lineinfile dest=/etc/ssh/sshd_config regexp="^PermitRootLogin" line="PermitRootLogin no" state=present
+  notify: Restart ssh
+
+- name: Disable tunneled clear text passwords
+  action: lineinfile dest=/etc/ssh/sshd_config regexp="^PasswordAuthentication" line="PasswordAuthentication no" state=present
+  notify: Restart ssh
+
+- name: Add fail2ban
+  apt: pkg=fail2ban
+
+- include_tasks: unattended-upgrades.yml
+  when: unattended_upgrades_enabled

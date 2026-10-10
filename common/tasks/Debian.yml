@@ -2,12 +2,10 @@
 - name: Debian | Enable sudo without password (Debian)
   lineinfile: "dest=/etc/sudoers backrefs=yes regexp='^%sudo\\s+ALL=\\(ALL:ALL\\)\\s+ALL' line='%sudo\\tALL=(ALL) NOPASSWD: ALL'"
 
-- name: Debian | Update apt package cache
-  apt: update_cache=yes
-  when: not ansible_check_mode
-
 - name: Debian | Install packages
   apt:
+    update_cache: true
+    cache_valid_time: 3600
     pkg:
     - rsync
     - less
@@ -19,20 +17,16 @@
     - vim
     - lsof
     - ssh
-    - host
+    - bind9-host
     - htop
-    - ntp
-    - mutt
-    - git-core
+    - ntpsec
+    - git
     - iotop
     - make
     - zip
     - unzip
     - tshark
     - sysstat
-    - python-httplib2
-    - python-netaddr
-    - dstat
 
 - name: Debian | Configure locales
   locale_gen: name={{ item }} state=present
@@ -49,12 +43,38 @@
 - name: Debian | Setup global vimrc
   template: src=vimrc-local.j2 dest=/etc/vim/vimrc.local owner=root group=root mode=0644
 
-- name: Debian | Set timezone to ETC/UTC
-  timezone: name=ETC/UTC
+- name: Debian | Set timezone to Etc/UTC
+  timezone: name="Etc/UTC"
 
-- name: Debian | Disallow root SSH access
-  action: lineinfile dest=/etc/ssh/sshd_config regexp="^PermitRootLogin" line="PermitRootLogin without-password" state=present
-  notify: Restart ssh
+- name: Disable some ubuntu dynamic motd
+  file: path="/etc/update-motd.d/{{ item }}" mode="a-x"
+  with_items:
+    - 00-header
+    - 10-help-text
+    - 50-motd-news
+    - 90-updates-available
+  failed_when: False
+
+- name: Remove some packages
+  apt:
+    pkg:
+      - landscape-common
+    state: absent
+    autoremove: true
+
+- name: Create local bin directory on skel
+  file: path="/etc/skel/.local/bin" state=directory
+
+- name: Upload local .bashrc_local on skel
+  template: src=bashrc_local.j2 dest="/etc/skel/.bashrc_local"
+
+- name: Enable .bashrc_local
+  lineinfile: dest=/etc/skel/.bashrc regexp="^test -e ~/.bashrc_local" line="test -e ~/.bashrc_local && . ~/.bashrc_local" state=present
+
+- name: Globally add user local bin path
+  copy:
+    dest: "/etc/profile.d/local_bin_path.sh"
+    content: "export PATH=$PATH:$HOME/.local/bin"
 
 - name: Disable ipv6
   sysctl: name={{ item.name }} value={{ item.value }} state=present ignoreerrors=yes

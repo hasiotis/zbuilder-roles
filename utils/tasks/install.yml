@@ -1,0 +1,59 @@
+---
+- name: "{{ _utils_tool }} | Set facts"
+  set_fact:
+    _utils_requested: "{{ lookup('vars', 'utils_' ~ _utils_tool ~ '_version') }}"
+
+- name: "{{ _utils_tool }} | Find latest version"
+  uri:
+    url: "{{ _utils_spec.latest_url }}"
+    return_content: true
+  register: _utils_latest_txt
+  check_mode: false
+  when: _utils_requested == 'latest' and _utils_spec.latest_url is defined
+
+- name: "{{ _utils_tool }} | Find latest GitHub release"
+  uri:
+    url: "https://github.com/{{ _utils_spec.repo }}/releases/latest"
+    method: HEAD
+    follow_redirects: all
+  register: _utils_latest_gh
+  check_mode: false
+  when: _utils_requested == 'latest' and _utils_spec.repo is defined
+
+- name: "{{ _utils_tool }} | Resolve version"
+  set_fact:
+    _utils_version: >-
+      {{ ((_utils_latest_txt.content | trim if _utils_spec.latest_url is defined
+           else _utils_latest_gh.url | basename)
+          if _utils_requested == 'latest' else _utils_requested)
+         | string | regex_replace('^v', '') }}
+
+- name: "{{ _utils_tool }} | Create staging directory"
+  tempfile:
+    state: directory
+    suffix: "-{{ _utils_tool }}"
+  register: _utils_tmp
+
+- name: "{{ _utils_tool }} | Download binary"
+  get_url:
+    url: "{{ _utils_spec.url }}"
+    dest: "{{ _utils_tmp.path }}/{{ _utils_spec.bin }}"
+  when: not _utils_spec.archive
+
+- name: "{{ _utils_tool }} | Download and extract archive"
+  unarchive:
+    src: "{{ _utils_spec.url }}"
+    dest: "{{ _utils_tmp.path }}"
+    remote_src: true
+  when: _utils_spec.archive
+
+# copy compares checksums, so this only reports changed on a new version
+- name: "{{ _utils_tool }} | Install into {{ utils_bin_dir }}"
+  copy:
+    src: "{{ _utils_tmp.path }}/{{ _utils_spec.bin }}"
+    dest: "{{ utils_bin_dir }}/{{ _utils_tool }}"
+    remote_src: true
+    mode: "0755"
+
+- name: "{{ _utils_tool }} | Remove staging directory"
+  file: path={{ _utils_tmp.path }} state=absent

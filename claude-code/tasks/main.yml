@@ -1,0 +1,36 @@
+---
+- name: Look up user home directories
+  getent:
+    database: passwd
+
+- name: Check for existing Claude Code installs
+  stat:
+    path: "{{ ansible_facts.getent_passwd[item][4] }}/.local/bin/claude"
+  loop: "{{ claude_code_users }}"
+  register: claude_code_bin
+
+- name: Select users that need Claude Code
+  set_fact:
+    claude_code_pending: "{{ claude_code_bin.results | rejectattr('stat.exists') | map(attribute='item') | list
+                             if not claude_code_force else claude_code_users }}"
+
+- name: Install Claude Code
+  when: claude_code_pending | length > 0
+  block:
+    - name: Download Claude Code installer
+      get_url:
+        url: https://claude.ai/install.sh
+        dest: /tmp/claude-install.sh
+        mode: "0755"
+
+    - name: Run Claude Code installer
+      become: true
+      become_user: "{{ item }}"
+      command: "/tmp/claude-install.sh {{ claude_code_version }}"
+      # Installer refuses to run as root via sudo unless explicitly allowed
+      environment: "{{ {'CLAUDE_INSTALL_ALLOW_SUDO': '1'} if item == 'root' else {} }}"
+      loop: "{{ claude_code_pending }}"
+
+  always:
+    - name: Remove Claude Code installer
+      file: path=/tmp/claude-install.sh state=absent

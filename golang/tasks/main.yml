@@ -1,0 +1,33 @@
+---
+- name: Download Go language SDK
+  get_url:
+    url: https://dl.google.com/go/go{{ golang_version }}.linux-amd64.tar.gz
+    dest: /usr/local/
+
+- name: Create Go language SDK installation directory
+  file:
+    state: directory
+    owner: root
+    group: root
+    mode: 'u=rwx,go=rx'
+    dest: '{{ golang_install_path }}'
+
+- name: Install Go language SDK
+  become: true
+  unarchive:
+    src: '/usr/local/go{{ golang_version }}.linux-amd64.tar.gz'
+    remote_src: true
+    extra_opts: '--strip-components=1'
+    dest: '{{ golang_install_path }}'
+    owner: root
+    group: root
+    creates: '{{ golang_install_path }}/bin'
+
+- name: Create a symbolic link
+  file:
+    src: '{{ golang_install_path }}/bin/go'
+    dest: /usr/local/bin/go
+    owner: root
+    group: root
+    state: link
+    force: true

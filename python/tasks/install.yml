@@ -1,0 +1,34 @@
+---
+- name: "{{ _python_tool }} | Set facts"
+  set_fact:
+    _python_spec: "{{ _python_catalog[_python_tool] }}"
+    _python_version: >-
+      {{ lookup('vars', 'python_' ~ _python_tool ~ '_version') | string | regex_replace('^v', '') }}
+    _python_target: "{{ _python_tool }}-{{ ansible_facts['architecture'] }}-unknown-linux-gnu"
+
+- name: "{{ _python_tool }} | Create staging directory"
+  tempfile:
+    state: directory
+    suffix: "-{{ _python_tool }}"
+  register: _python_tmp
+
+# Astral release tags have no leading "v"; "latest" uses GitHub's redirect
+- name: "{{ _python_tool }} | Download and extract archive"
+  unarchive:
+    src: >-
+      https://github.com/{{ _python_spec.repo }}/releases/{{ 'latest/download' if _python_version == 'latest'
+      else 'download/' ~ _python_version }}/{{ _python_target }}.tar.gz
+    dest: "{{ _python_tmp.path }}"
+    remote_src: true
+
+# copy compares checksums, so this only reports changed on a new version
+- name: "{{ _python_tool }} | Install into {{ python_bin_dir }}"
+  copy:
+    src: "{{ _python_tmp.path }}/{{ _python_target }}/{{ item }}"
+    dest: "{{ python_bin_dir }}/{{ item }}"
+    remote_src: true
+    mode: "0755"
+  loop: "{{ _python_spec.bins }}"
+
+- name: "{{ _python_tool }} | Remove staging directory"
+  file: path={{ _python_tmp.path }} state=absent

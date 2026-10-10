@@ -1,0 +1,14 @@
+---
+# Tools to install
+python_tools:
+  - uv
+  - ruff
+
+# Versions: "latest" or pin a specific one (with or without leading "v"), e.g. "0.9.2"
+python_uv_version: latest
+python_ruff_version: latest
+
+python_bin_dir: /usr/local/bin
+
+# Tools already present in python_bin_dir are skipped; set true to re-install
+python_force: false

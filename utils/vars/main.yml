@@ -1,0 +1,40 @@
+---
+_utils_arch_map:
+  x86_64: amd64
+  aarch64: arm64
+
+_utils_arch: "{{ _utils_arch_map[ansible_facts['architecture']] }}"
+
+# Per tool: how to find the latest version, where to download from and
+# where the binary lives inside the archive. _utils_version has no leading "v".
+_utils_catalog:
+  kubectl:
+    latest_url: https://dl.k8s.io/release/stable.txt
+    url: "https://dl.k8s.io/release/v{{ _utils_version }}/bin/linux/{{ _utils_arch }}/kubectl"
+    archive: false
+    bin: kubectl
+  helm:
+    latest_url: https://get.helm.sh/helm-latest-version
+    url: "https://get.helm.sh/helm-v{{ _utils_version }}-linux-{{ _utils_arch }}.tar.gz"
+    archive: true
+    bin: "linux-{{ _utils_arch }}/helm"
+  stern:
+    repo: stern/stern
+    url: "https://github.com/stern/stern/releases/download/v{{ _utils_version }}/stern_{{ _utils_version }}_linux_{{ _utils_arch }}.tar.gz"
+    archive: true
+    bin: stern
+  k9s:
+    repo: derailed/k9s
+    url: "https://github.com/derailed/k9s/releases/download/v{{ _utils_version }}/k9s_Linux_{{ _utils_arch }}.tar.gz"
+    archive: true
+    bin: k9s
+  kind:
+    repo: kubernetes-sigs/kind
+    url: "https://github.com/kubernetes-sigs/kind/releases/download/v{{ _utils_version }}/kind-linux-{{ _utils_arch }}"
+    archive: false
+    bin: kind
+  sofka:
+    repo: nklmilojevic/sofka
+    url: "https://github.com/nklmilojevic/sofka/releases/download/v{{ _utils_version }}/sofka-v{{ _utils_version }}-{{ ansible_facts['architecture'] }}-unknown-linux-musl.tar.gz"
+    archive: true
+    bin: sofka
