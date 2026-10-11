@@ -7,6 +7,7 @@ utils_tools:
   - k9s
   - kind
   - sofka
+  - devspace
 
 # Versions: "latest" resolves the newest release at run time,
 # or pin a specific one (with or without leading "v"), e.g. "1.31.2"
@@ -16,6 +17,7 @@ utils_stern_version: latest
 utils_k9s_version: latest
 utils_kind_version: latest
 utils_sofka_version: latest
+utils_devspace_version: latest
 
 utils_bin_dir: /usr/local/bin
 

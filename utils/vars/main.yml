@@ -38,3 +38,8 @@ _utils_catalog:
     url: "https://github.com/nklmilojevic/sofka/releases/download/v{{ _utils_version }}/sofka-v{{ _utils_version }}-{{ ansible_facts['architecture'] }}-unknown-linux-musl.tar.gz"
     archive: true
     bin: sofka
+  devspace:
+    repo: devspace-sh/devspace
+    url: "https://github.com/devspace-sh/devspace/releases/download/v{{ _utils_version }}/devspace-linux-{{ _utils_arch }}"
+    archive: false
+    bin: devspace
