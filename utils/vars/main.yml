@@ -43,3 +43,11 @@ _utils_catalog:
     url: "https://github.com/devspace-sh/devspace/releases/download/v{{ _utils_version }}/devspace-linux-{{ _utils_arch }}"
     archive: false
     bin: devspace
+  glow:
+    repo: charmbracelet/glow
+    url: "https://github.com/charmbracelet/glow/releases/download/v{{ _utils_version }}/glow_{{ _utils_version }}_Linux_{{ _utils_glow_arch }}.tar.gz"
+    archive: true
+    bin: "glow_{{ _utils_version }}_Linux_{{ _utils_glow_arch }}/glow"
+
+# glow names amd64 as x86_64 but keeps arm64
+_utils_glow_arch: "{{ {'amd64': 'x86_64'}.get(_utils_arch, _utils_arch) }}"
